@@ -8,18 +8,93 @@ app.use(express.json())
 app.use(express.urlencoded({extended : true}))
 
 
-// importo la clase Contenedor del ejercicio anterior
-const Contenedor = require('./contenedor.js')
-//Creo una instancia de la clase para poder invocar sus metodos posteriormente
-const cont = new Contenedor.Contenedor('./productos.txt')
+
+/***********************Creo la lista de productos**************************/
+
+const listProducts = [
+  {  
+    title:"Escuadra",
+    price:123.45,
+    thumbnail:"https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-256.png",
+    id:1
+  },
+  {
+    title:"Calculadora",
+    price:234.56,
+    thumbnail:"https://cdn3.iconfinder.com/data/icons/education-209/64/calculator-math-tool-school-256.png",
+    id:2
+  },
+  {
+    title:"Globo Terráqueo",
+    price:345.67,
+    thumbnail:"https://cdn3.iconfinder.com/data/icons/education-209/64/globe-earth-geograhy-planet-school-256.png",
+    id:3
+  },
+  {
+    title:"papa",
+    price:"1200",
+    thumbnail:"https://url",
+    id:4
+  },
+  {
+    title:"pera",
+    price:"40",
+    thumbnail:"https://url.img",
+    id:5
+  }
+]
+
+/******************* Defino las funciones **********************************/
+
+const getById =number=>{
+  const founded = listProducts.find( element => element.id == number) || null;
+  return founded ;
+}
+
+const deleteById = number=>{
+        
+const index = listProducts.findIndex(element => element.id == number);
+ if (index == -1) {
+      console.log ('No se encontró el elemento')
+  }
+  
+      const deletedProduct = listProducts[index]
+      listProducts.splice(index, 1)
+  
+  return deletedProduct
+}
+
+const updateById = (number , updatedProduct)=>{        
+      const productToUpdate ={
+        id: number,
+        title : updatedProduct.title,
+        price : updatedProduct.price,
+        thumbnail : updatedProduct.thumbnail  
+      }
+
+      const index = listProducts.findIndex(element => element.id == number);
+      listProducts[index] = productToUpdate        
+  
+
+     return productToUpdate
+}
+
+const save = (object)=>{       
+  let maxId = 0;
+  listProducts.forEach(element => {
+      if (element.id > maxId ){ maxId = element.id}
+  });    
+  object.id = (maxId + 1);
+  listProducts.push(object);   
+}
+
 
 
 /**************GET PRODUCTS********************/
-const getProducts = async (req, res) =>{
+const getProducts = (req, res) =>{
     try{
-      const productos = await cont.getData()
       res.json({ 
-                productos:productos
+                productos:listProducts
                });
     } catch (error) {
         res.send(error)
@@ -27,11 +102,15 @@ const getProducts = async (req, res) =>{
   }
 
 
+
+
+
+
 /***************GET BY ID****************/
   const getProductsById = async (req, res) =>{
     try{
          let id = req.params.id
-         const productoEncontrado = await cont.getById(id)
+         const productoEncontrado = getById(id)
           if( !productoEncontrado ){
               res.status(400).json({error : 'producto no encontrado'})
           }
@@ -46,7 +125,7 @@ const getProducts = async (req, res) =>{
   const delProduct = async (req, res) =>{
     try{
           let id = req.params.id
-          const productoEliminado = cont.deleteById(id)
+          const productoEliminado =deleteById(id)
           res.json({producto: productoEliminado})
         }catch (error) {
               return res.send(error)
@@ -59,8 +138,7 @@ const getProducts = async (req, res) =>{
     try{
       let id = req.params.id 
       const { producto } = req.body;
-      const productoActualizado = await cont.updateById(id , producto)
-        
+      const productoActualizado = updateById(id , producto) 
       res.json({producto: productoActualizado})
          
         }catch (error) {
@@ -70,7 +148,7 @@ const getProducts = async (req, res) =>{
 
 
 /***************POST*****************/
-    const postProduct = async (req, res) =>{
+    const postProduct = (req, res) =>{
       try{
         const { title, price, thumbnail } = req.body      
         const productoNuevo = {
@@ -78,7 +156,7 @@ const getProducts = async (req, res) =>{
           price,
           thumbnail
         }  
-        await cont.save(productoNuevo)  
+        save(productoNuevo)  
         res.json({"producto agregado" : productoNuevo})
           }catch (error) {
                 return res.send(error)

@@ -71,7 +71,7 @@ class Contenedor {
         const data = await this.getData();  
 
         const index = data.findIndex(object => {return object.id === number;});
-       if (index == -1) {
+       if (index = -1) {
             console.log ('No se encontró el elemento')
         }
         else{
@@ -97,6 +97,28 @@ class Contenedor {
              console.log (err)
          }
     }
+
+
+async updateById(id , updateProducto){
+
+    try {
+        const lista = await this.getAll();
+        const producto =  await this.getById(id)
+        const indiceObjeto = lista.findIndex( e => e.id == id);
+        producto.title = updateProducto.title;
+        producto.price = updateProducto.price;
+        producto.thumbnail = updateProducto.thumbnail;
+        lista.splice(indiceObjeto , 1 , producto)
+        await this.deleteAll();
+        await fs.writeFile(`./${this.ruta}`, JSON.stringify(lista));
+       
+       return producto
+
+    } catch (error) {
+        throw new Error (`No se puede actualizar: ${error}`);  
+    }
+}
+
 }
 
 module.exports = { Contenedor }
